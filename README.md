@@ -90,34 +90,34 @@ The pre-processing was done using the script found at `./projects/example/exampl
 ## Training
 To train the autoencoder to compress your data, you run the following command. The config file defines the path of the input data, the number of epochs, and all the other parameters.
 ```console
-poetry run python baler --project=firstProject --mode=train
+poetry run python baler --project=example --mode=train
 ```
 
 ## Compressing
 To use the derived model for compression, you can now choose ``--mode=compress``, which can be run as
 ```console
-poetry run python baler --project=firstProject --mode=compress
+poetry run python baler --project=example --mode=compress
 ```
 This will output a compressed file called "compressed.pickle", and this is the latent space representation of the input dataset. It will also output cleandata_pre_comp.pickle which is just a copy of the original data.
 
 ## Decompressing
 To decompress the compressed file, we choose ``--mode=decompress`` and run:
 ```console
-poetry run python baler --project=firstProject --mode=decompress
+poetry run python baler --project=example --mode=decompress
 ```
 This will output ``./projects/example/decompressed_output/decompressed.pickle``. To double-check the file sizes, we can run
 ```console
-poetry run python baler --project=firstProject --mode=info
+poetry run python baler --project=example --mode=info
 ```
 which will print the file sizes of the data we’re compressing, the compressed dataset & the decompressed dataset.
 
 ## Evaluating Performance
 To evaluate the performance of our compression, we compare our data before the compression to the data after compression+decompression. We do this by plotting the variable distribution before and after, as well as the response distribution R=(before-after)/before.
 
-To run the standard evaluation, we use the following command to generate a .pdf document under ``./projects/firstProject/plotting/evaluation.pdf``
+To run the standard evaluation, we use the following command to generate a .pdf document under ``./projects/example/plotting/evaluation.pdf``
 
 ```console
-poetry run python baler --project=firstProject --mode=evaluate
+poetry run python baler --project=example --mode=evaluate
 ```
 
 ## Custom analysis
@@ -126,10 +126,10 @@ A lot of scientists interested in using Baler wants to see how compression affec
 Custom analyses are defined under ``./projects/example/example_analysis.py``. In our example, the analysis fits the particle mass distribution, and compares the mass derived from the fit before and after compression. You can run the custom analysis using
 
 ```console
-poetry run python baler --project=firstProject --mode=analysis
+poetry run python baler --project=example --mode=analysis
 ```
 
-The results of the analysis comparison is shown in ``./projects/firstProject/plotting/analysis.pdf``
+The results of the analysis comparison is shown in ``./projects/example/plotting/analysis.pdf``
 
 # Your Task
 ## Improve Baler for High Energy Particle Physics (HEP) Data
