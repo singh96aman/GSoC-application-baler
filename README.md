@@ -133,7 +133,7 @@ The results of the analysis comparison is shown in ``./projects/example/plotting
 
 # Your Task
 ## Improve Baler for High Energy Particle Physics (HEP) Data
-Your task in this application is to minimize the difference between the mass calculated before and after compression. You will do this by making improvements to the source code of Baler. You are not allowed to make changes to the analysis script.
+Your task in this application is to minimize the difference between the mass calculated before and after compression (this value is found in ./projects/example/plotting/analysis.pdf after running the analysis). You will do this by making improvements to the source code of Baler. **You are not allowed to make changes to the analysis script.**
 
 The most probable places for improvements are in:
 - Autoencoder model: ``baler/baler/modules/models.py``
@@ -145,7 +145,7 @@ The most probable places for improvements are in:
 Baler works on a lot of different data, all the way from particle physics and computational fluid dynamics to life sciences on .csv files. Create or copy an analysis from a dataset of your choice and present the analysis before/after compression. No need to optimze the training!
 
 # Rules
-- You are not allowed to make changes to the analysis script. You can put a copy of it if you wish to have it in another project directory, but the code for the analysis needs to be the same as in the example
+- You are not allowed to make changes to the analysis script. You can make a copy of it if you wish to have it in another project directory, but the code for the analysis needs to be the same as in the example
 - You are not allowed to train for more epochs than 100
 - You are not allowed to use a batch size larger than 512
 
@@ -154,19 +154,24 @@ Baler works on a lot of different data, all the way from particle physics and co
 After you are satisfied with the your improvements you will make a "Power Point" style presentation of maximum 5 slides, which present:
 - A link to your fork of Baler
 - Your improvements: Why and how they were implemented
-- Results: Show your results, at least by showing the output of the analysis
+- Results: Show your results, at least by showing the output of the evaluation and analysis steps
 - Discussion
   - Discuss the results
   - Why your improvements work?
   - What could be improved further
+  - What is better, a good overall evalation or a good analysis result?
   - Can you think of any fundamental flaws with Baler? (We already know many!)
 
 ## Present results from your own analysis and dataset
 Once you have performed a simple analysis before and after compression on a dataset of your choice you will make a "Power Point" style presentation of maximum 5 slides, which present:
 - The dataset
 - The analysis
+- Possible improvements
 - How you made it work with Baler
 - The impact on society this could have
+
+## Code
+For us to be able to evaluate your work properly you need to provide us with the code you developed. Best would be if you forked this repository. **Do not upload data files to GitHub!** just code, config files, etc.
 
 ## Assessment
 Your performance will be assessed by the improvements and implementations you are able to achieve. But equally important is your ability to communicate your work, results, and ability to discuss. The latter is very important because the Baler collaboration is an international collaboration working together remotely most of the time.
