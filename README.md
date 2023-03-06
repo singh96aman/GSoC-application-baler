@@ -12,7 +12,7 @@ Baler is a tool used to test the feasibility of compressing different types of s
 * Go to your windows search bar and search for "powershell". right-click powerhsell and select "run as administrator"
 * Enable Linux subsystem by entering this into the PowerShell and hitting enter: `Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux`
 * Go to the windows store and download "Ubuntu 22.04.1 LTS"
-* Once downloaded, open it. This will start Ubuntu as a "terminal". After picking a username and password, input the following commands into that terminal. You can copy the comands using ctrl+c or the button to the right of the text. But pasting it into the terminal can only be done by right-clicking anywhere in the terminal window.
+* Once downloaded, open it. This will start Ubuntu as a "terminal". After picking a username and password, input the following commands into that terminal. You can copy the commands using ctrl+c or the button to the right of the text. But pasting it into the terminal can only be done by right-clicking anywhere in the terminal window.
 
 Start by updating the Windows Subsystem for Linux
 ```console
@@ -73,10 +73,19 @@ md5sum data/firstProject/cms_data.root
 
 # Tutorial Example
 ## Create New Project 
-Start by creating a new project directory. This will create the standardized directory structure needed, and create a skeleton config and output directories. In this example, these will live under `./projects/example/example_config.py`.\
+Start by creating a new project directory. This will create the standardized directory structure needed, and create a skeleton config, pre-processing script, analysis script, and output directories. In this example, these will live under `./projects/example/`.\
 ```console
 poetry run python baler --project=example --mode=newProject
 ```
+
+## Pre-processing
+Baler Currently only supports Pandas dataframes, saved as pickles, as input. Therefore, most data needs to go through some kind of pre-processing before Baler can work on that data.
+
+To run the pre-processing for this specific example dataset, run:
+```console
+poetry run python baler --project=example --mode=preprocessing
+```
+The pre-processing was done using the script found at `./projects/example/example_preprocessing.py`
 
 ## Training
 To train the autoencoder to compress your data, you run the following command. The config file defines the path of the input data, the number of epochs, and all the other parameters.
@@ -96,16 +105,16 @@ To decompress the compressed file, we choose ``--mode=decompress`` and run:
 ```console
 poetry run python baler --project=firstProject --mode=decompress
 ```
-This will output ``decompressed.pickle``. To double-check the file sizes, we can run
+This will output ``./projects/example/decompressed_output/decompressed.pickle``. To double-check the file sizes, we can run
 ```console
 poetry run python baler --project=firstProject --mode=info
 ```
 which will print the file sizes of the data we’re compressing, the compressed dataset & the decompressed dataset.
 
 ## Evaluating Performance
-To evaluate the performance of our compression, we compare our data before the compression to the data after compression+decompression. We do this by plotting the varable distribution before and after, as well as the response distribution R=(before-after)/before.
+To evaluate the performance of our compression, we compare our data before the compression to the data after compression+decompression. We do this by plotting the variable distribution before and after, as well as the response distribution R=(before-after)/before.
 
-To run the standard evaluatin, we use the following command to generate a .pdf document under ``./projects/firstProject/plotting/evaluation.pdf``
+To run the standard evaluation, we use the following command to generate a .pdf document under ``./projects/firstProject/plotting/evaluation.pdf``
 
 ```console
 poetry run python baler --project=firstProject --mode=evaluate
@@ -124,16 +133,16 @@ The results of the analysis comparison is shown in ``./projects/firstProject/plo
 
 # Your Task
 ## Improve Baler for High Energy Particle Physics (HEP) Data
-Your task in this application is to minimize the difference between the mass calculated before and after compression. You will do this by making improvements to the soure code of Baler. You are not allowed to make changes to the analysis script.
+Your task in this application is to minimize the difference between the mass calculated before and after compression. You will do this by making improvements to the source code of Baler. You are not allowed to make changes to the analysis script.
 
-The most probabla places for improvements are in:
+The most probable places for improvements are in:
 - Autoencoder model: ``baler/baler/modules/models.py``
 - Data Normalization: ``baler/baler/modules/data_processing.py``
-- Traning Procedure: ``baler/baler/modules/training.py``
+- Training Procedure: ``baler/baler/modules/training.py``
 - Training Utilities (Loss function, early stopping, etc.): ``baler/baler/modules/utils.py``
 
 ## Run Baler on a Dataset of your choice
-Baler works on a lot of different data, all the way from particle phsics and computational fluid dynamics to life sciences on .csv files. Create or copy an analysis from a dataset of your choice and present the analysis before/after compression. No need to optimze the training!
+Baler works on a lot of different data, all the way from particle physics and computational fluid dynamics to life sciences on .csv files. Create or copy an analysis from a dataset of your choice and present the analysis before/after compression. No need to optimze the training!
 
 # Rules
 - You are not allowed to make changes to the analysis script. You can put a copy of it if you wish to have it in another project directory, but the code for the analysis needs to be the same as in the example
@@ -160,4 +169,4 @@ Once you have performed a simple analysis before and after compression on a data
 - The impact on society this could have
 
 ## Assessment
-Your performance will be assessed by the improvements and implementations you are able to achieve. But equally imporant is your ability to communicate your work, results, and ability to discuss. The latter is very important because the Baler collaboration is an international collaboration working together remotely most of the time.
+Your performance will be assessed by the improvements and implementations you are able to achieve. But equally important is your ability to communicate your work, results, and ability to discuss. The latter is very important because the Baler collaboration is an international collaboration working together remotely most of the time.
