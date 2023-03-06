@@ -3,9 +3,17 @@ Thank you for applying! In this project we will be improving the tool our team i
 
 Baler is a tool used to test the feasibility of compressing different types of scientific data using machine learning-based autoencoders.
 
-# Setup
+# Table of contents
+1. [Setup](#setup)
+2. [Tutorial Example](#tutorial)
+3. [Your Task](#task)
+4. [Rules](#rules)
+5. [Deliverables](#deliverables)
+
+
+# Setup <a name="setup"></a>
 ## If you are using Windows 10/11
-* If you are using a Mac on Linux system, skip to the next section
+* If you are using a Mac on Linux system, skip to the [next section](#linux)
 * The best way to run baler on Windows is to do so using the "Windows Subsystem for Linux"
 * Install "git for windows": https://github.com/git-for-windows/git/releases/tag/v2.39.1.windows.1
   * For a 64 bit system, probably use this one: https://github.com/git-for-windows/git/releases/download/v2.39.1.windows.1/Git-2.39.1-64-bit.exe
@@ -36,7 +44,7 @@ sudo apt-get install python3-pip
 ```
 At this point, you have a working Linux environment and you can follow the next section for the Linux setup
 
-## Setup (Linux/Mac or Windows Subsystem for Linux)
+## Setup (Linux/Mac or Windows Subsystem for Linux) <a name="linux"></a>
 For some Linux users (Ubuntu), disable the KDE keyring
 ```console
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
@@ -71,7 +79,7 @@ md5sum data/example/example.root
 > 28910642bf94e0fa9442bc804830f88b  data/example/example.root
 ```
 
-# Tutorial Example
+# Tutorial Example  <a name="tutorial"></a>
 ## Create New Project 
 Start by creating a new project directory. This will create the standardized directory structure needed, and create a skeleton config, pre-processing script, analysis script, and output directories. In this example, these will live under `./projects/example/`.
 ```console
@@ -131,7 +139,7 @@ poetry run python baler --project=example --mode=analysis
 
 The results of the analysis comparison is shown in ``./projects/example/plotting/analysis.pdf``
 
-# Your Task
+# Your Task  <a name="task"></a>
 ## Improve Baler for High Energy Particle Physics (HEP) Data
 Your task in this application is to minimize the difference between the mass calculated before and after compression (this value is found in ./projects/example/plotting/analysis.pdf after running the analysis). You will do this by making improvements to the source code of Baler. **You are not allowed to make changes to the analysis script.**
 
@@ -144,12 +152,12 @@ The most probable places for improvements are in:
 ## Run Baler on a Dataset of your choice
 Baler works on a lot of different data, all the way from particle physics and computational fluid dynamics to life sciences on .csv files. Create or copy an analysis from a dataset of your choice and present the analysis before/after compression. No need to optimze the training!
 
-# Rules
+# Rules <a name="rules"></a>
 - You are not allowed to make changes to the analysis script. You can make a copy of it if you wish to have it in another project directory, but the code for the analysis needs to be the same as in the example
 - You are not allowed to train for more epochs than 100
 - You are not allowed to use a batch size larger than 512
 
-# Deliverables
+# Deliverables <a name="deliverables"></a>
 ## Present Improvements for HEP Data
 After you are satisfied with the your improvements you will make a "Power Point" style presentation of maximum 5 slides, which present:
 - A link to your fork of Baler
