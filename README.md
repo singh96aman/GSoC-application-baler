@@ -12,6 +12,8 @@ Baler is a tool used to test the feasibility of compressing different types of s
 4. [Rules](#rules)
 5. [Deliverables](#deliverables)
 
+# Before you begin
+Before you begin, fork this repository. By doing so you can send us a link to your fork and we can see the code you develop as part of this evaluation.
 
 # Setup <a name="setup"></a>
 ## If you are using Windows 10/11
@@ -59,9 +61,9 @@ Add poetry to path in your current session (Maybe not necessary for Mac)
 ```console
 source ~/.profile
 ```
-Clone this repository
+Clone **your fork** of this  repository
 ```console
-git clone https://github.com/baler-compressor/GSoC-application-baler
+git clone https://github.com/USERNAME/GSoC-application-baler
 ```
 Move into the Baler directory
 ```console
