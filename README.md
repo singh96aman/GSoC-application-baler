@@ -73,9 +73,9 @@ md5sum data/example/example.root
 
 # Tutorial Example
 ## Create New Project 
-Start by creating a new project directory. This will create the standardized directory structure needed, and create a skeleton config, pre-processing script, analysis script, and output directories. In this example, these will live under `./projects/example/`.\
+Start by creating a new project directory. This will create the standardized directory structure needed, and create a skeleton config, pre-processing script, analysis script, and output directories. In this example, these will live under `./projects/example/`.
 ```console
-poetry run python baler --project=example --mode=newProject
+poetry run python baler --project=example --mode=new_project
 ```
 
 ## Pre-processing
