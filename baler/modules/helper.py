@@ -13,22 +13,17 @@ import importlib
 
 def get_arguments():
     parser = argparse.ArgumentParser(
-        prog="baler.py",
-        description="""Baler is a machine learning based compression tool for big data.\n
-Baler has three running modes:\n
-\t1. Derivation: Using a configuration file and a "small" input dataset, Baler derives a machine learning model optimized to compress and decompress your data.\n
-\t2. Compression: Using a previously derived model and a large input dataset, Baler compresses your data and outputs a smaller compressed file.\n
-\t3. Decompression: Using a previously compressed file as input and a model, Baler decompresses your data into a larger file.""",
-        epilog="Enjoy!",
+        prog="poetry run baler",
+        description="Baler is a machine learning based compression tool for scientific data.",
+    )
+    parser.add_argument(
+        "--project", type=str, required=False, help="Name of new project, it is a directory name"
     )
     parser.add_argument(
         "--mode",
         type=str,
         required=False,
-        help="train, compress, decompress, plot, info",
-    )
-    parser.add_argument(
-        "--project", type=str, required=False, help="Name of new project"
+        help="new_project, preprocess, train, compress, decompress, info, evaluate, analysis",
     )
 
     args = parser.parse_args()
@@ -58,14 +53,11 @@ def create_new_project(project_name: str, base_path: str = "projects") -> None:
     ]
     os.makedirs(project_path)
     with open(os.path.join(project_path, f"{project_name}_config.py"), "w") as f:
-        print(project_path)
         f.write(create_default_config(project_name))
     with open(os.path.join(project_path, f"{project_name}_preprocessing.py"), "w") as f:
-        print(project_path)
-        f.write(create_default_config(project_name))
+        f.write(create_default_preprocessing(project_name))
     with open(os.path.join(project_path, f"{project_name}_analysis.py"), "w") as f:
-        print(project_path)
-        f.write(create_default_config(project_name))
+        f.write(create_default_analysis(project_name))
     for directory in required_directories:
         os.makedirs(os.path.join(project_path, directory))
 
@@ -113,12 +105,240 @@ def set_config(c):
 
 def create_default_preprocessing(project_name) -> str:
     return f'''
+import uproot
 
+def pre_processing(input_path,output_path):
+
+    Branch = "Events"
+    Collection = "recoGenJets_slimmedGenJets__PAT."
+    Objects = "recoGenJets_slimmedGenJets__PAT.obj"
+    dropped_variables = [
+        "recoGenJets_slimmedGenJets__PAT.obj.m_state.vertex_.fCoordinates.fX",
+        "recoGenJets_slimmedGenJets__PAT.obj.m_state.vertex_.fCoordinates.fY",
+        "recoGenJets_slimmedGenJets__PAT.obj.m_state.vertex_.fCoordinates.fZ",
+        "recoGenJets_slimmedGenJets__PAT.obj.m_state.qx3_",
+        "recoGenJets_slimmedGenJets__PAT.obj.m_state.pdgId_",
+        "recoGenJets_slimmedGenJets__PAT.obj.m_state.status_",
+        "recoGenJets_slimmedGenJets__PAT.obj.mJetArea",
+        "recoGenJets_slimmedGenJets__PAT.obj.mPileupEnergy",
+        "recoGenJets_slimmedGenJets__PAT.obj.mPassNumber"]
+    
+    # Load data
+    tree = uproot.open(input_path)[Branch][Collection][Objects]
+    #Type clearing
+    names = type_clearing(tree)
+    df = tree.arrays(names, library="pd")
+    # Clean data
+    df = df.drop(columns=dropped_variables)
+    df = df.reset_index(drop=True)
+    df = df.dropna()
+    global cleared_column_names
+    cleared_column_names = list(df)
+    df.to_pickle(output_path)
+
+def type_clearing(tt_tree):
+    type_names = tt_tree.typenames()
+    column_type = []
+    column_names = []
+
+    # In order to remove non integers or -floats in the TTree,
+    # we separate the values and keys
+    for keys in type_names:
+        column_type.append(type_names[keys])
+        column_names.append(keys)
+
+    # Checks each value of the typename values to see if it isn't an int or
+    # float, and then removes it
+    for i in range(len(column_type)):
+        if column_type[i] != "float[]" and column_type[i] != "int32_t[]":
+            # print('Index ',i,' was of type ',Typename_list_values[i],'\
+            # and was deleted from the file')
+            del column_names[i]
+
+    # Returns list of column names to use in load_data function
+    return column_names
     '''
 
 def create_default_analysis(project_name) -> str:
-    return f'''
+    return '''
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.backends.backend_pdf import PdfPages
+import scipy.optimize as opt;
+import pickle
 
+#data = "http://opendata.cern.ch/record/21856#"
+
+def evaluation(project_name, data_path_before, data_path_after):
+    print(data_path_before, data_path_after)
+    project_path = f"projects/{project_name}/"
+
+    with open(data_path_before, "rb") as handle:
+        before = pickle.load(handle)
+        before = before
+    with open(data_path_after, "rb") as handle:
+        after = pickle.load(handle)
+
+    #plot_all(project_path, before, after)
+    variable = "recoGenJets_slimmedGenJets__PAT.obj.m_state.p4Polar_.fCoordinates.fM"
+    plot_peak(project_path, before[variable], after[variable])
+
+def fit(x, a, b, c, k, m):
+     return a*np.exp(-((x-b)**2)/(2*c**2)) + m*x + k
+
+def plot_peak(project_path, before, after):
+    fig, (ax1,ax2) = plt.subplots(2,1,figsize=(8*2.5*(1/2.54), 6*2.5*(1/2.54)), sharex=True)
+
+    x_min = min(before+after)
+    x_max = max(before+after)
+    x_diff = abs(x_max - x_min)
+
+    with PdfPages(project_path + "/plotting/peak.pdf") as pdf:    
+
+        # Before Histogram
+        counts_before, bins_before = np.histogram(
+            before, bins=np.linspace(100,225,200)
+        )
+        hist1 = ax1.hist(
+            bins_before[:-1], bins_before, weights=counts_before, label="Before", histtype="step", color="black"
+        )
+        before_bin_centers = hist1[1][:-1]+(hist1[1][1:]-hist1[1][:-1])/2
+        before_bin_centers_error = (hist1[1][1:]-hist1[1][:-1])/2
+        before_bin_counts = hist1[0]
+        before_count_error = np.sqrt(hist1[0])
+        ax1.errorbar(before_bin_centers,before_bin_counts, yerr=before_count_error, xerr=None, marker="",linewidth=0.75, markersize=1, linestyle='', color="black")
+        optimizedParameters1, pcov1 = opt.curve_fit(fit, before_bin_centers, before_bin_counts, p0=[1,173,1,1,1]);
+        perr1 = np.sqrt(np.diag(pcov1))
+        ax1.plot(before_bin_centers, fit(before_bin_centers, *optimizedParameters1),linewidth=1, label="Fit",color="red")
+        leg1 = ax1.legend(borderpad=0.5, loc=1, ncol=2, frameon=True,facecolor="white",framealpha=1,fontsize='medium')
+        leg1._legend_box.align = "left"
+        leg1.set_title(f"Mass  : {round(optimizedParameters1[1],2)} +/- {round(perr1[1],2)}" + f"\nWidth : {round(optimizedParameters1[2],2)} +/- {round(perr1[2],2)}")
+        ax1.set_ylabel("Counts", fontsize=14, ha='right', y=1.0)
+        ax1.set_xlabel("Mass [GeV]", fontsize=14, ha='right',x=1.0)
+        ax1.set_title('Before Compression')
+        print(f"\nBefore compression:")
+        print(f"Mass  : {round(optimizedParameters1[1],2)} \t+/- {round(perr1[1],2)}")
+        print(f"Width : {round(optimizedParameters1[2],2)} \t+/- {round(perr1[2],2)}")
+
+        # After Histogram
+        counts_after, bins_after = np.histogram(
+            after, bins=np.linspace(100,225,200)
+        )
+        hist2 = ax2.hist(
+            bins_after[:-1], bins_after, weights=counts_after, label="After", histtype="step", color="black"
+        )
+        after_bin_centers = hist2[1][:-1]+(hist1[1][1:]-hist1[1][:-1])/2
+        after_bin_centers_error = (hist2[1][1:]-hist1[1][:-1])/2
+        after_bin_counts = hist2[0]
+        after_count_error = np.sqrt(hist2[0])
+        ax2.errorbar(after_bin_centers,after_bin_counts, yerr=after_count_error, xerr=None, marker="",linewidth=0.75, markersize=1, linestyle='', color="black")
+        optimizedParameters2, pcov2 = opt.curve_fit(fit, after_bin_centers, after_bin_counts, p0=[1,173,1,1,1]);
+        perr2 = np.sqrt(np.diag(pcov2))
+        ax2.plot(after_bin_centers, fit(after_bin_centers, *optimizedParameters2),linewidth=1, label="Fit",color="red");
+        leg2 = ax2.legend(borderpad=0.5, loc=1, ncol=2, frameon=True,facecolor="white",framealpha=1,fontsize='medium')
+        leg2._legend_box.align = "left"
+        leg2.set_title(f"Mass  : {round(optimizedParameters2[1],2)} +/- {round(perr2[1],2)}" + f"\nWidth : {round(optimizedParameters2[2],2)} +/- {round(perr2[2],2)}")
+        ax2.set_ylabel("Counts", fontsize=14, ha='right', y=1.0)
+        ax2.set_xlabel("Mass [GeV]", fontsize=14, ha='right',x=1.0)
+        ax2.set_title('After Decompression')
+
+        print(f"\nAfter compression:")
+        print(f"Mass  : {round(optimizedParameters2[1],2)} \t+/- {round(perr2[1],2)}")
+        print(f"Width : {round(optimizedParameters2[2],2)} \t+/- {round(perr2[2],2)}")
+
+        diff = round((abs(optimizedParameters1[1]-optimizedParameters2[1])/optimizedParameters2[1])*100,1)
+        fig.suptitle(f"Relative Mass Difference = {diff} %", fontsize=16)
+
+        pdf.savefig()
+        
+
+
+def plot_all(project_path, before, after):
+    response = (after - before) / before
+
+    with PdfPages(project_path + "/plotting/comparison.pdf") as pdf:
+        fig = plt.figure(constrained_layout=True, figsize=(10, 4))
+        subfigs = fig.subfigures(1, 2, wspace=0.07, width_ratios=[1, 1])
+        
+        axsLeft = subfigs[0].subplots(2, 1, sharex=True)
+        ax1=axsLeft[0]
+        ax3=axsLeft[1]
+        axsRight = subfigs[1].subplots()
+        ax2=axsRight
+
+        columns = list(before.columns)
+        number_of_columns = len(columns)
+        for index, column in enumerate(columns):
+            column_name = column.split(".")[-1]
+            print(f"Plotting: {column_name} ({index+1} of {number_of_columns})")
+            response_list = list(filter(lambda p: -20 <= p <= 20, response[column]))
+            square = np.square(response_list)
+            MS = square.mean()
+            response_RMS = np.sqrt(MS)
+
+            x_min = min(before[column]+after[column])
+            x_max = max(before[column]+after[column])
+            x_diff = abs(x_max - x_min)
+
+            # Before Histogram
+            counts_before, bins_before = np.histogram(
+                before[column], bins=np.linspace(x_min-0.1*x_diff, x_max+0.1*x_diff,200)
+            )
+            ax1.hist(
+                bins_before[:-1], bins_before, weights=counts_before, label="Before"
+            )
+
+            # After Histogram
+            counts_after, bins_after = np.histogram(
+                after[column], bins=np.linspace(x_min-0.1*x_diff, x_max+0.1*x_diff,200)
+            )
+            ax1.hist(
+                bins_after[:-1],
+                bins_after,
+                weights=counts_after,
+                label="After",
+                histtype="step",
+            )
+
+            ax1.set_ylabel("Counts", ha="right", y=1.0)
+            ax1.set_yscale("log")
+            ax1.legend(loc="best")
+            ax1.set_xlim(x_min-0.1*x_diff, x_max+0.1*x_diff)
+
+            data_bin_centers = bins_after[:-1]+(bins_after[1:]-bins_after[:-1])/2
+            ax3.scatter(data_bin_centers, (counts_after - counts_before),marker='.') # FIXME: Dividing by zero
+            ax3.axhline(y=0, linewidth=0.2, color="black")
+            ax3.set_xlabel(f"{column_name}", ha="right", x=1.0)
+            ax3.set_ylim(-200, 200)
+            ax3.set_ylabel("Residual")
+
+            # Response Histogram
+            counts_response, bins_response = np.histogram(
+                response[column], bins=np.arange(-2, 2, 0.01)
+            )
+            ax2.hist(
+                bins_response[:-1],
+                bins_response,
+                weights=counts_response,
+                label="Response",
+            )
+            ax2.axvline(
+                np.mean(response_list),
+                color="k",
+                linestyle="dashed",
+                linewidth=1,
+                label=f"Mean {round(np.mean(response_list),4)}",
+            )
+
+            ax2.set_xlabel(f"{column_name} Response", ha="right", x=1.0)
+            ax2.set_ylabel("Counts", ha="right", y=1.0)
+            ax2.legend(loc="best", title=f"RMS: {round(response_RMS,4)}")
+
+            pdf.savefig()
+            ax2.clear()
+            ax1.clear()
+            ax3.clear()  
     '''
 
 
