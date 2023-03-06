@@ -9,7 +9,7 @@ Baler is a tool used to test the feasibility of compressing different types of s
 * The best way to run baler on Windows is to do so using the "Windows Subsystem for Linux"
 * Install "git for windows": https://github.com/git-for-windows/git/releases/tag/v2.39.1.windows.1
   * For a 64 bit system, probably use this one: https://github.com/git-for-windows/git/releases/download/v2.39.1.windows.1/Git-2.39.1-64-bit.exe
-* Go to your windows search bar and search for "powershell". right-click powerhsell and select "run as administrator"
+* Go to your windows search bar and search for "powershell". Reight-click powerhsell and select "run as administrator"
 * Enable Linux subsystem by entering this into the PowerShell and hitting enter: `Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux`
 * Go to the windows store and download "Ubuntu 22.04.1 LTS"
 * Once downloaded, open it. This will start Ubuntu as a "terminal". After picking a username and password, input the following commands into that terminal. You can copy the commands using ctrl+c or the button to the right of the text. But pasting it into the terminal can only be done by right-clicking anywhere in the terminal window.
