@@ -10,27 +10,29 @@ import importlib
 def main():
     config, mode, project_name = helper.get_arguments()
     project_path = f"projects/{project_name}/"
-    if mode == "newProject":
+    if mode == "new_project":
         helper.create_new_project(project_name)
-    elif mode == "pp":
+    elif mode == "preprocess":
         pre_processing(project_name, config.path_before_pre_processing, config.input_path)
     elif mode == "train":
         perform_training(config, project_path)
-    elif mode == "plot":
-        perform_plotting(project_path, config)
     elif mode == "compress":
         perform_compression(config, project_path)
     elif mode == "decompress":
         perform_decompression(config.save_as_root, config.model_name, project_path)
-    elif mode == "eval":
-        evaluation(project_name, config.input_path,project_path+"decompressed_output/decompressed.pickle")
+    elif mode == "evaluate":
+        perform_plotting(project_path, config)
     elif mode == "info":
         print_info(project_path)
+    elif mode == "analysis":
+        analysis(project_name, config.input_path,project_path+"decompressed_output/decompressed.pickle")
+    else:
+        print(f'"{mode}" is not a know command!')
 
 def pre_processing(project_name, input_path, path_before_pre_processing):
     importlib.import_module(f"projects.{project_name}.{project_name}_preprocessing").pre_processing(input_path, path_before_pre_processing)
 
-def evaluation(project_name, data_path_before, data_path_after):
+def analysis(project_name, data_path_before, data_path_after):
     importlib.import_module(f"projects.{project_name}.{project_name}_evaluation").evaluation(project_name, data_path_before, data_path_after)
 
 def perform_training(config, project_path):

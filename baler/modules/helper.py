@@ -32,10 +32,10 @@ Baler has three running modes:\n
     )
 
     args = parser.parse_args()
-    if not args.mode or (args.mode != "newProject" and not args.project):
+    if not args.mode or (args.mode != "new_project" and not args.project):
         parser.print_usage()
         exit(1)
-    if args.mode == "newProject":
+    if args.mode == "new_project":
         config = None
     else:
         config = configClass
@@ -58,6 +58,12 @@ def create_new_project(project_name: str, base_path: str = "projects") -> None:
     ]
     os.makedirs(project_path)
     with open(os.path.join(project_path, f"{project_name}_config.py"), "w") as f:
+        print(project_path)
+        f.write(create_default_config(project_name))
+    with open(os.path.join(project_path, f"{project_name}_preprocessing.py"), "w") as f:
+        print(project_path)
+        f.write(create_default_config(project_name))
+    with open(os.path.join(project_path, f"{project_name}_analysis.py"), "w") as f:
         print(project_path)
         f.write(create_default_config(project_name))
     for directory in required_directories:
@@ -84,9 +90,10 @@ class configClass:
     test_size           : float
 
 def create_default_config(project_name) -> str:
-    return f"""
+    return f'''
 def set_config(c):
     c.input_path          = "data/{project_name}/{project_name}.pickle"
+    c.path_before_pre_processing = "data/example/example.root"
     c.compression_ratio   = 2.0
     c.epochs              = 5
     c.early_stopping      = True
@@ -102,7 +109,17 @@ def set_config(c):
     c.batch_size          = 512
     c.save_as_root        = True
     c.test_size           = 0.15
-"""
+'''
+
+def create_default_preprocessing(project_name) -> str:
+    return f'''
+
+    '''
+
+def create_default_analysis(project_name) -> str:
+    return f'''
+
+    '''
 
 
 def to_pickle(data, path):
