@@ -51,11 +51,11 @@ source ~/.profile
 ```
 Clone this repository
 ```console
-git clone https://github.com/baler-compressor/baler.git
+git clone https://github.com/baler-compressor/GSoC-application-baler
 ```
 Move into the Baler directory
 ```console
-cd baler
+cd GSoC-application-baler
 ```
 Use Poetry to install the project dependencies
 ```console
