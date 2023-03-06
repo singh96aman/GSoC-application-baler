@@ -121,7 +121,7 @@ poetry run python baler --project=example --mode=evaluate
 ```
 
 ## Custom analysis
-A lot of scientists interested in using Baler wants to see how compression affects their measurements. Therefore, Baler supports users running their ow custom analysis as part of Baler to compare their measurements before and after compression.
+A lot of scientists interested in using Baler wants to see how compression affects their measurements. Therefore, Baler supports users running their own custom analysis as part of Baler to compare their measurements before and after compression.
 
 Custom analyses are defined under ``./projects/example/example_analysis.py``. In our example, the analysis fits the particle mass distribution, and compares the mass derived from the fit before and after compression. You can run the custom analysis using
 
