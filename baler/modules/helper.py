@@ -23,7 +23,7 @@ def get_arguments():
         "--mode",
         type=str,
         required=False,
-        help="new_project, preprocess, train, compress, decompress, info, evaluate, analysis",
+        help="new_project, preprocessing (pp), train, compress, decompress, info, evaluate (eval), analysis",
     )
 
     args = parser.parse_args()
@@ -170,7 +170,7 @@ import pickle
 
 #data = "http://opendata.cern.ch/record/21856#"
 
-def evaluation(project_name, data_path_before, data_path_after):
+def analysis(project_name, data_path_before, data_path_after):
     print(data_path_before, data_path_after)
     project_path = f"projects/{project_name}/"
 
@@ -194,7 +194,7 @@ def plot_peak(project_path, before, after):
     x_max = max(before+after)
     x_diff = abs(x_max - x_min)
 
-    with PdfPages(project_path + "/plotting/peak.pdf") as pdf:    
+    with PdfPages(project_path + "/plotting/analysis.pdf") as pdf:    
 
         # Before Histogram
         counts_before, bins_before = np.histogram(
@@ -213,13 +213,14 @@ def plot_peak(project_path, before, after):
         ax1.plot(before_bin_centers, fit(before_bin_centers, *optimizedParameters1),linewidth=1, label="Fit",color="red")
         leg1 = ax1.legend(borderpad=0.5, loc=1, ncol=2, frameon=True,facecolor="white",framealpha=1,fontsize='medium')
         leg1._legend_box.align = "left"
-        leg1.set_title(f"Mass  : {round(optimizedParameters1[1],2)} +/- {round(perr1[1],2)}" + f"\nWidth : {round(optimizedParameters1[2],2)} +/- {round(perr1[2],2)}")
+        leg1.set_title(f"Mass  : {round(optimizedParameters1[1],2)} +/- {round(perr1[1],2)}" + f"Width : {round(optimizedParameters1[2],2)} +/- {round(perr1[2],2)}")
         ax1.set_ylabel("Counts", fontsize=14, ha='right', y=1.0)
         ax1.set_xlabel("Mass [GeV]", fontsize=14, ha='right',x=1.0)
         ax1.set_title('Before Compression')
-        print(f"\nBefore compression:")
-        print(f"Mass  : {round(optimizedParameters1[1],2)} \t+/- {round(perr1[1],2)}")
-        print(f"Width : {round(optimizedParameters1[2],2)} \t+/- {round(perr1[2],2)}")
+        ax1.set_ylim(0,1500)
+        print(f"Before compression:")
+        print(f"Mass  : {round(optimizedParameters1[1],2)} +/- {round(perr1[1],2)}")
+        print(f"Width : {round(optimizedParameters1[2],2)} +/- {round(perr1[2],2)}")
 
         # After Histogram
         counts_after, bins_after = np.histogram(
@@ -238,109 +239,21 @@ def plot_peak(project_path, before, after):
         ax2.plot(after_bin_centers, fit(after_bin_centers, *optimizedParameters2),linewidth=1, label="Fit",color="red");
         leg2 = ax2.legend(borderpad=0.5, loc=1, ncol=2, frameon=True,facecolor="white",framealpha=1,fontsize='medium')
         leg2._legend_box.align = "left"
-        leg2.set_title(f"Mass  : {round(optimizedParameters2[1],2)} +/- {round(perr2[1],2)}" + f"\nWidth : {round(optimizedParameters2[2],2)} +/- {round(perr2[2],2)}")
+        leg2.set_title(f"Mass  : {round(optimizedParameters2[1],2)} +/- {round(perr2[1],2)}" + f"Width : {round(optimizedParameters2[2],2)} +/- {round(perr2[2],2)}")
         ax2.set_ylabel("Counts", fontsize=14, ha='right', y=1.0)
         ax2.set_xlabel("Mass [GeV]", fontsize=14, ha='right',x=1.0)
         ax2.set_title('After Decompression')
+        ax2.set_ylim(0,1500)
 
-        print(f"\nAfter compression:")
-        print(f"Mass  : {round(optimizedParameters2[1],2)} \t+/- {round(perr2[1],2)}")
-        print(f"Width : {round(optimizedParameters2[2],2)} \t+/- {round(perr2[2],2)}")
+        print(f"After compression:")
+        print(f"Mass  : {round(optimizedParameters2[1],2)} +/- {round(perr2[1],2)}")
+        print(f"Width : {round(optimizedParameters2[2],2)} +/- {round(perr2[2],2)}")
 
         diff = round((abs(optimizedParameters1[1]-optimizedParameters2[1])/optimizedParameters2[1])*100,1)
         fig.suptitle(f"Relative Mass Difference = {diff} %", fontsize=16)
 
         pdf.savefig()
-        
-
-
-def plot_all(project_path, before, after):
-    response = (after - before) / before
-
-    with PdfPages(project_path + "/plotting/comparison.pdf") as pdf:
-        fig = plt.figure(constrained_layout=True, figsize=(10, 4))
-        subfigs = fig.subfigures(1, 2, wspace=0.07, width_ratios=[1, 1])
-        
-        axsLeft = subfigs[0].subplots(2, 1, sharex=True)
-        ax1=axsLeft[0]
-        ax3=axsLeft[1]
-        axsRight = subfigs[1].subplots()
-        ax2=axsRight
-
-        columns = list(before.columns)
-        number_of_columns = len(columns)
-        for index, column in enumerate(columns):
-            column_name = column.split(".")[-1]
-            print(f"Plotting: {column_name} ({index+1} of {number_of_columns})")
-            response_list = list(filter(lambda p: -20 <= p <= 20, response[column]))
-            square = np.square(response_list)
-            MS = square.mean()
-            response_RMS = np.sqrt(MS)
-
-            x_min = min(before[column]+after[column])
-            x_max = max(before[column]+after[column])
-            x_diff = abs(x_max - x_min)
-
-            # Before Histogram
-            counts_before, bins_before = np.histogram(
-                before[column], bins=np.linspace(x_min-0.1*x_diff, x_max+0.1*x_diff,200)
-            )
-            ax1.hist(
-                bins_before[:-1], bins_before, weights=counts_before, label="Before"
-            )
-
-            # After Histogram
-            counts_after, bins_after = np.histogram(
-                after[column], bins=np.linspace(x_min-0.1*x_diff, x_max+0.1*x_diff,200)
-            )
-            ax1.hist(
-                bins_after[:-1],
-                bins_after,
-                weights=counts_after,
-                label="After",
-                histtype="step",
-            )
-
-            ax1.set_ylabel("Counts", ha="right", y=1.0)
-            ax1.set_yscale("log")
-            ax1.legend(loc="best")
-            ax1.set_xlim(x_min-0.1*x_diff, x_max+0.1*x_diff)
-
-            data_bin_centers = bins_after[:-1]+(bins_after[1:]-bins_after[:-1])/2
-            ax3.scatter(data_bin_centers, (counts_after - counts_before),marker='.') # FIXME: Dividing by zero
-            ax3.axhline(y=0, linewidth=0.2, color="black")
-            ax3.set_xlabel(f"{column_name}", ha="right", x=1.0)
-            ax3.set_ylim(-200, 200)
-            ax3.set_ylabel("Residual")
-
-            # Response Histogram
-            counts_response, bins_response = np.histogram(
-                response[column], bins=np.arange(-2, 2, 0.01)
-            )
-            ax2.hist(
-                bins_response[:-1],
-                bins_response,
-                weights=counts_response,
-                label="Response",
-            )
-            ax2.axvline(
-                np.mean(response_list),
-                color="k",
-                linestyle="dashed",
-                linewidth=1,
-                label=f"Mean {round(np.mean(response_list),4)}",
-            )
-
-            ax2.set_xlabel(f"{column_name} Response", ha="right", x=1.0)
-            ax2.set_ylabel("Counts", ha="right", y=1.0)
-            ax2.legend(loc="best", title=f"RMS: {round(response_RMS,4)}")
-
-            pdf.savefig()
-            ax2.clear()
-            ax1.clear()
-            ax3.clear()  
     '''
-
 
 def to_pickle(data, path):
     with open(path, "wb") as handle:

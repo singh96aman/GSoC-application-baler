@@ -1,6 +1,3 @@
-![example workflow](https://github.com/baler-compressor/baler/actions/workflows/test_and_lint.yaml/badge.svg)
-![example workflow](https://github.com/baler-compressor/baler/actions/workflows/docker.yaml/badge.svg)
-
 # Introduction
 Thank you for applying! In this project we will be improving the tool our team is developing to compress scientific data using machine learning. The tool is called "Baler" and as part of your application, you will apply baler to a given particle physics dataset, a data set of your choice, and present your results. This will test your skills of working with python libraries, autoencoders, and communication skills.
 
@@ -40,7 +37,7 @@ sudo apt-get install python3-pip
 At this point, you have a working Linux environment and you can follow the next section for the Linux setup
 
 ## Setup (Linux/Mac or Windows Subsystem for Linux)
-For some Linux users, disable the KDE keyring
+For some Linux users (Ubuntu), disable the KDE keyring
 ```console
 export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
 ```
@@ -48,7 +45,7 @@ Install poetry for managing the python environment
 ```console
 pip3 install poetry
 ```
-Add poetry to path in your current session
+Add poetry to path in your current session (Maybe not necessary for Mac)
 ```console
 source ~/.profile
 ```

@@ -12,7 +12,7 @@ def main():
     project_path = f"projects/{project_name}/"
     if mode == "new_project":
         helper.create_new_project(project_name)
-    elif mode == "preprocess":
+    elif mode == "preprocessing" or mode == "pp":
         pre_processing(project_name, config.path_before_pre_processing, config.input_path)
     elif mode == "train":
         perform_training(config, project_path)
@@ -20,7 +20,7 @@ def main():
         perform_compression(config, project_path)
     elif mode == "decompress":
         perform_decompression(config.save_as_root, config.model_name, project_path)
-    elif mode == "evaluate":
+    elif mode == "evaluate" or mode == "eval":
         perform_plotting(project_path, config)
     elif mode == "info":
         print_info(project_path)
@@ -33,7 +33,7 @@ def pre_processing(project_name, input_path, path_before_pre_processing):
     importlib.import_module(f"projects.{project_name}.{project_name}_preprocessing").pre_processing(input_path, path_before_pre_processing)
 
 def analysis(project_name, data_path_before, data_path_after):
-    importlib.import_module(f"projects.{project_name}.{project_name}_evaluation").evaluation(project_name, data_path_before, data_path_after)
+    importlib.import_module(f"projects.{project_name}.{project_name}_analysis").analysis(project_name, data_path_before, data_path_after)
 
 def perform_training(config, project_path):
     train_set, test_set, number_of_columns, normalization_features, cleared_col_names = helper.process(config.input_path,config.test_size)
