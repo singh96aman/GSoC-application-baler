@@ -67,8 +67,8 @@ wget http://opendata.cern.ch/record/21856/files/assets/cms/mc/RunIIFall15MiniAOD
 ```
 Finally, verify that the download was successful
 ```console 
-md5sum data/firstProject/cms_data.root 
-> 28910642bf94e0fa9442bc804830f88b  data/firstProject/cms_data.root
+md5sum data/example/example.root 
+> 28910642bf94e0fa9442bc804830f88b  data/example/example.root
 ```
 
 # Tutorial Example
