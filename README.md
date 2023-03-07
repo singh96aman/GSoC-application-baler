@@ -164,7 +164,7 @@ Baler works on a lot of different data, all the way from particle physics and co
 # Deliverables <a name="deliverables"></a>
 In response to your application email, you received a link to a Google classroom. This google classroom has an assignement with details and a Google form. Your main deliverable is a link to your fork of this reository. You will provide us the link via the Google form.
 
-The other three deliverables listed below you will submit by puttng them as ".pdf" files in the `GSoC-application-baler/deliverables` directory of your fork.
+The other four deliverables listed below you will submit by puttng them as ".pdf" files in the `GSoC-application-baler/deliverables` directory of your fork.
 
 The deadline for your work is **20th of March 15:00 Central European Standard Time**
 
@@ -190,5 +190,8 @@ Once you have performed a simple analysis before and after compression on a data
 ## Your Resume/CV
 Put acopy of you resume/CV in the deliverables diectory of your fork.
 
-## Assessment
+## Statement of motivation
+A short text describing your motivation for working on this project with us
+
+# Assessment
 Your performance will be assessed by the improvements and implementations you are able to achieve. But equally important is your ability to communicate your work, results, and ability to discuss. The latter is very important because the Baler collaboration is an international collaboration working together remotely most of the time.
