@@ -88,9 +88,9 @@ def set_config(c):
     c.path_before_pre_processing = "data/example/example.root"
     c.compression_ratio   = 2.0
     c.epochs              = 10
-    c.early_stopping      = True
-    c.lr_scheduler        = False
-    c.patience            = 100
+    c.early_stopping      = False
+    c.lr_scheduler        = True
+    c.patience            = 20
     c.min_delta           = 0
     c.model_name          = "george_SAE"
     c.custom_norm         = False
