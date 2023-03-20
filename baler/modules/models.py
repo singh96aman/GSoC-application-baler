@@ -2,6 +2,54 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
+class VanillaVAE(nn.Module):
+    def __init__(self, device, n_features, z_dim, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.device = device
+        self.n_features = n_features
+        self.z_dim = z_dim
+
+        # encoder
+        self.en1 = nn.Linear(n_features, 200, dtype=torch.float64, device=device)
+        self.en2 = nn.Linear(200, 100, dtype=torch.float64, device=device)
+
+        self.en3 = nn.Linear(100, 50, dtype=torch.float64, device=device)
+        
+        # decoder
+        self.de1 = nn.Linear(z_dim, 50, dtype=torch.float64, device=device)
+        self.de2 = nn.Linear(50, 100, dtype=torch.float64, device=device)
+        self.de3 = nn.Linear(100, 200, dtype=torch.float64, device=device)
+        self.de4 = nn.Linear(200, n_features, dtype=torch.float64, device=device)
+
+        #latent Distribution
+        self.fc_mu = nn.Linear(50, z_dim, dtype=torch.float64, device=device)
+        self.fc_var = nn.Linear(50, z_dim, dtype=torch.float64, device=device)
+
+    def encode(self, x):
+        h1 = F.leaky_relu(self.en1(x))
+        h2 = F.leaky_relu(self.en2(h1))
+        h3 = self.en3(h2)
+        mu = self.fc_mu(h3)
+        log_var = self.fc_var(h3)
+        return [mu, log_var]
+
+    def decode(self, z):
+        h4 = F.leaky_relu(self.de1(z))
+        h5 = F.leaky_relu(self.de2(h4))
+        h6 = F.leaky_relu(self.de3(h5))
+        out = self.de4(h6)
+        return out
+
+    def reparameterize_sample(self, mu, logvar):
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        return eps * std + mu
+
+    def forward(self, x):
+        mu, log_var = self.encode(x)
+        z = self.reparameterize_sample(mu, log_var)
+        return  [self.decode(z), mu, log_var]
 
 class george_SAE(nn.Module):
     def __init__(self, device, n_features, z_dim, *args, **kwargs):

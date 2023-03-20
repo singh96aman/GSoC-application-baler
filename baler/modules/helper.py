@@ -359,6 +359,32 @@ def compress(model_path, config):
     return compressed, data_before, cleared_col_names
 
 
+def compress_VAE(model_path, config):
+    # Give the encoding function the correct input as tensor
+    data = data_loader(config.input_path)
+    cleared_col_names = data_processing.get_columns(data)
+    number_of_columns = len(data_processing.get_columns(data))
+    try:
+        config.latent_space_size = int(number_of_columns//config.compression_ratio)
+        config.number_of_columns = number_of_columns
+    except AttributeError:
+        assert(number_of_columns==config.number_of_columns)
+    data_before = numpy.array(data)
+    data = normalize(data, config.custom_norm, cleared_col_names)
+    
+    # Initialise and load the model correctly.
+    ModelObject = data_processing.initialise_model(config.model_name)
+    model = data_processing.load_model(
+        ModelObject,
+        model_path=model_path,
+        n_features=number_of_columns,
+        z_dim=config.latent_space_size,
+    )
+    data_tensor = numpy_to_tensor(data).to(model.device)
+
+    compressed_mu, compressed_log_var = model.encode(data_tensor)
+    return compressed_mu, compressed_log_var, data_before, cleared_col_names
+
 def decompress(model_path, input_path, model_name):
 
     # Load the data & convert to tensor
@@ -380,6 +406,31 @@ def decompress(model_path, input_path, model_name):
     decompressed = model.decode(data_tensor)
     return decompressed
 
+def decompress_VAE(model_path, input_path_mu, input_path_var, model_name):
+
+    # Load the data & convert to tensor
+    data_mu = data_loader(input_path_mu)
+    data_log_var = data_loader(input_path_var)
+    latent_space_size = len(data_mu[0])
+    modelDict = torch.load(str(model_path))
+    number_of_columns = len(modelDict[list(modelDict.keys())[-1]])
+
+    if model_name == "VanillaVAE":
+        number_of_columns = 8 #Override for VAE
+
+    # Initialise and load the model correctly.
+    ModelObject = data_processing.initialise_model(model_name)
+    model = data_processing.load_model(
+        ModelObject,
+        model_path=model_path,
+        n_features=number_of_columns,
+        z_dim=latent_space_size,
+    )
+    data_mu_tensor = numpy_to_tensor(data_mu).to(model.device)
+    data_log_var_tensor = numpy_to_tensor(data_log_var).to(model.device)
+    z = model.reparameterize_sample(data_mu_tensor, data_log_var_tensor)
+    decompressed = model.decode(z)
+    return decompressed
 
 def to_root(data_path, cleared_col_names, save_path):
     if isinstance(data_path, pickle.Pickler):

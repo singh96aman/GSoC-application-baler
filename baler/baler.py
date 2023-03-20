@@ -34,7 +34,7 @@ def main():
         pre_processing(project_name, config.path_before_pre_processing, config.input_path)
         perform_training(config, project_path)
         perform_compression(config, project_path)
-        perform_decompression(config.save_as_root, config.model_name, project_path)
+        perform_decompression(config, config.save_as_root, config.model_name, project_path)
         perform_plotting(project_path, config)
         print_info(project_path)
         analysis(project_name, config.input_path,project_path+"decompressed_output/decompressed.pickle")
@@ -48,6 +48,7 @@ def analysis(project_name, data_path_before, data_path_after):
     importlib.import_module(f"projects.{project_name}.{project_name}_analysis").analysis(project_name, data_path_before, data_path_after)
 
 def perform_training(config, project_path):
+    print("Training with Model - ",config.model_name)
     train_set, test_set, number_of_columns, normalization_features, cleared_col_names = helper.process(config.input_path,config.test_size)
     train_set_norm = helper.normalize(train_set, config.custom_norm, cleared_col_names)
     test_set_norm = helper.normalize(test_set, config.custom_norm, cleared_col_names)
@@ -70,6 +71,10 @@ def perform_training(config, project_path):
         model, number_of_columns, train_set_norm, test_set_norm, output_path, config
     )
     test_data = helper.detach(test_data_tensor)
+    if config.model_name == "VanillaVAE":
+        #Putting 0 as output of model is list with Reconstructed Data, Mu and Var
+        reconstructed_data_tensor = reconstructed_data_tensor[0]
+
     reconstructed_data = helper.detach(reconstructed_data_tensor)
     
     print("Un-normalzing...")
@@ -102,33 +107,53 @@ def perform_plotting(project_path, config):
 def perform_compression(config, project_path):
     print("Compressing...")
     start = time.time()
-    compressed, data_before, cleared_col_names = helper.compress(
-        model_path=project_path + "model/model.pt",
-        config=config,
-    )
-    # Converting back to numpyarray
-    compressed = helper.detach(compressed)
+    if config.model_name == "VanillaVAE":
+        compressed_mu, compressed_log_var, data_before, cleared_col_names = helper.compress_VAE(
+            model_path=project_path + "model/model.pt",
+            config=config,
+        )
+        compressed_mu = helper.detach(compressed_mu)
+        compressed_log_var = helper.detach(compressed_log_var)
+    else:
+        compressed, data_before, cleared_col_names = helper.compress(
+            model_path=project_path + "model/model.pt",
+            config=config,
+        )
+        # Converting back to numpyarray
+        compressed = helper.detach(compressed)
     end = time.time()
 
     print("Compression took:", f"{(end - start) / 60:.3} minutes")
 
-    helper.to_pickle(compressed, project_path + "compressed_output/compressed.pickle")
+    if config.model_name == "VanillaVAE":
+        helper.to_pickle(compressed_mu, project_path + "compressed_output/compressed_mu.pickle")
+        helper.to_pickle(compressed_log_var, project_path + "compressed_output/compressed_log_var.pickle")   
+    else:
+        helper.to_pickle(compressed, project_path + "compressed_output/compressed.pickle")
+    
     helper.to_pickle(
         data_before, project_path + "compressed_output/cleandata_pre_comp.pickle"
     )
     helper.to_pickle(cleared_col_names,project_path+"compressed_output/column_names.pickle")
 
 
-def perform_decompression(save_as_root, model_name, project_path):
+def perform_decompression(config, save_as_root, model_name, project_path):
     print("Decompressing...")
     cleared_col_names = helper.from_pickle(project_path+"compressed_output/column_names.pickle")
     start = time.time()
-    decompressed = helper.decompress(
-        model_path=project_path + "model/model.pt",
-        input_path=project_path + "compressed_output/compressed.pickle",
-        model_name=model_name,
-    )
-
+    if config.model_name == "VanillaVAE":
+        decompressed = helper.decompress_VAE(
+            model_path=project_path + "model/model.pt",
+            input_path_mu=project_path + "compressed_output/compressed_mu.pickle",
+            input_path_var=project_path + "compressed_output/compressed_log_var.pickle",
+           model_name=model_name,
+        )
+    else:
+        decompressed = helper.decompress(
+            model_path=project_path + "model/model.pt",
+            input_path=project_path + "compressed_output/compressed.pickle",
+            model_name=model_name,
+        )
     # Converting back to numpyarray
     decompressed = helper.detach(decompressed)
     normalization_features = pd.read_csv(

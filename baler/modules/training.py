@@ -12,7 +12,7 @@ import random
 import numpy as np
 
 
-def fit(model, train_dl, train_ds, model_children, regular_param, optimizer, RHO, l1):
+def fit(model, train_dl, train_ds, model_children, regular_param, optimizer, RHO, l1, config):
     print("### Beginning Training")
 
     model.train()
@@ -27,13 +27,22 @@ def fit(model, train_dl, train_ds, model_children, regular_param, optimizer, RHO
         inputs = inputs.to(model.device)
         optimizer.zero_grad()
         reconstructions = model(inputs)
-        loss, mse_loss, l1_loss = utils.sparse_loss_function_L1(
-            model_children=model_children,
-            true_data=inputs,
-            reconstructed_data=reconstructions,
-            reg_param=regular_param,
-            validate=False,
-        )
+        if config.model_name == "VanillaVAE":
+            loss, mse_loss, l1_loss = utils.sparse_loss_function_L1_VAE(
+                model_children=model_children,
+                true_data=inputs,
+                reconstructed_data=reconstructions,
+                reg_param=regular_param,
+                validate=False,
+            )
+        else:
+            loss, mse_loss, l1_loss = utils.sparse_loss_function_L1(
+                model_children=model_children,
+                true_data=inputs,
+                reconstructed_data=reconstructions,
+                reg_param=regular_param,
+                validate=False,
+            )
 
         loss.backward()
         optimizer.step()
@@ -45,7 +54,7 @@ def fit(model, train_dl, train_ds, model_children, regular_param, optimizer, RHO
     return epoch_loss, mse_loss, l1_loss
 
 
-def validate(model, test_dl, test_ds, model_children, reg_param):
+def validate(model, test_dl, test_ds, model_children, reg_param,config):
     print("### Beginning Validating")
 
     model.eval()
@@ -59,13 +68,22 @@ def validate(model, test_dl, test_ds, model_children, reg_param):
             counter += 1
             inputs = inputs.to(model.device)
             reconstructions = model(inputs)
-            loss = utils.sparse_loss_function_L1(
-                model_children=model_children,
-                true_data=inputs,
-                reconstructed_data=reconstructions,
-                reg_param=reg_param,
-                validate=True,
-            )
+            if config.model_name == "VanillaVAE":
+                loss = utils.sparse_loss_function_L1_VAE(
+                    model_children=model_children,
+                    true_data=inputs,
+                    reconstructed_data=reconstructions,
+                    reg_param=reg_param,
+                    validate=True,
+                )
+            else:
+                loss = utils.sparse_loss_function_L1(
+                    model_children=model_children,
+                    true_data=inputs,
+                    reconstructed_data=reconstructions,
+                    reg_param=reg_param,
+                    validate=True,
+                )
             running_loss += loss.item()
 
     epoch_loss = running_loss / counter
@@ -143,6 +161,7 @@ def train(model, variables, train_data, test_data, parent_path, config):
             RHO=RHO,
             regular_param=reg_param,
             l1=l1,
+            config=config
         )
 
         train_loss.append(train_epoch_loss)
@@ -153,6 +172,7 @@ def train(model, variables, train_data, test_data, parent_path, config):
             test_ds=valid_ds,
             model_children=model_children,
             reg_param=reg_param,
+            config=config
         )
         val_loss.append(val_epoch_loss)
         if config.lr_scheduler:

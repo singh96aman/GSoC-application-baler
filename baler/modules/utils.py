@@ -30,6 +30,52 @@ def new_loss_func(model, reconstructed_data, true_data, reg_param, val):
         loss = mse_loss
         return loss
 
+def kl_loss_function(model_children, true_data, reconstructed_data, reg_param, validate):
+    """
+    Computes the VAE loss function.
+    KL(N(\mu, \sigma), N(0, 1)) = \log \frac{1}{\sigma} + \frac{\sigma^2 + \mu^2}{2} - \frac{1}{2}
+    :param args:
+    :param kwargs:
+    :return:
+    """
+    #Since KL Loss Function only to be called for VAE with o/p Reconstructed Data, Mu, Var
+    assert(torch.is_tensor(reconstructed_data) == False)
+    recons = reconstructed_data[0]
+    input = true_data
+    mu = reconstructed_data[1]
+    log_var = reconstructed_data[2]
+    kld_weight = reg_param
+    recons_loss =F.mse_loss(recons, input)
+    l1_loss=0
+    values = true_data
+    if not validate:
+        kld_loss = torch.mean(-0.5 * torch.sum(1 + log_var - mu ** 2 - log_var.exp()), dim = 0)
+        loss = recons_loss + kld_weight * kld_loss
+        return loss, recons_loss, l1_loss
+    else:
+        return recons_loss
+
+def sparse_loss_function_L1_VAE(
+    model_children, true_data, reconstructed_data, reg_param, validate
+):
+    #Only Considering the Reconstructed Data
+    reconstructed_data = reconstructed_data[0]
+    mse = nn.MSELoss()
+    mse_loss = mse(reconstructed_data, true_data)
+
+    l1_loss = 0
+    values = true_data
+    if not validate:
+        #L1 Regularization to be added in Future
+        '''
+        for i in range(len(model_children)):
+            values = F.relu(model_children[i](values))
+            l1_loss += torch.mean(torch.abs(values))
+        '''
+        loss = mse_loss + reg_param * l1_loss
+        return loss, mse_loss, l1_loss
+    else:
+        return mse_loss
 
 def sparse_loss_function_L1(
     model_children, true_data, reconstructed_data, reg_param, validate
