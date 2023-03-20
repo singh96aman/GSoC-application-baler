@@ -10,6 +10,10 @@ import importlib
 def main():
     config, mode, project_name = helper.get_arguments()
     project_path = f"projects/{project_name}/"
+
+    #Temporary Change to Test Quickly
+    mode = "all"
+
     if mode == "new_project":
         helper.create_new_project(project_name)
     elif mode == "preprocessing" or mode == "pp":
@@ -25,6 +29,14 @@ def main():
     elif mode == "info":
         print_info(project_path)
     elif mode == "analysis":
+        analysis(project_name, config.input_path,project_path+"decompressed_output/decompressed.pickle")
+    elif mode == "all":
+        pre_processing(project_name, config.path_before_pre_processing, config.input_path)
+        perform_training(config, project_path)
+        perform_compression(config, project_path)
+        perform_decompression(config.save_as_root, config.model_name, project_path)
+        perform_plotting(project_path, config)
+        print_info(project_path)
         analysis(project_name, config.input_path,project_path+"decompressed_output/decompressed.pickle")
     else:
         print(f'"{mode}" is not a know command!')
@@ -172,4 +184,5 @@ def print_info(project_path):
 
 
 if __name__ == "__main__":
+    os.environ["CUBLAS_WORKSPACE_CONFIG"]=":4096:8"
     main()

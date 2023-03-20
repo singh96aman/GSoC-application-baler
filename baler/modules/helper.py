@@ -27,6 +27,11 @@ def get_arguments():
     )
 
     args = parser.parse_args()
+    
+    #Temporary Hack to Test Quickly
+    args.project = "example"
+    args.mode = "all"
+
     if not args.mode or (args.mode != "new_project" and not args.project):
         parser.print_usage()
         exit(1)
