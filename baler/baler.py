@@ -23,7 +23,7 @@ def main():
     elif mode == "compress":
         perform_compression(config, project_path)
     elif mode == "decompress":
-        perform_decompression(config.save_as_root, config.model_name, project_path)
+        perform_decompression(project_name, config.save_as_root, config.model_name, project_path)
     elif mode == "evaluate" or mode == "eval":
         perform_plotting(project_path, config)
     elif mode == "info":

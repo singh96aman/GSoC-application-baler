@@ -8,8 +8,8 @@ def set_config(c):
     c.lr_scheduler        = True
     c.patience            = 20
     c.min_delta           = 0
-    #c.model_name          = "george_SAE"
-    c.model_name          = "VanillaVAE"
+    c.model_name          = "george_SAE"
+    #c.model_name          = "VanillaVAE"
     c.custom_norm         = True
     c.l1                  = True
     c.reg_param             = 0.001
