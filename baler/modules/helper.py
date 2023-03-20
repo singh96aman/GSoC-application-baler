@@ -32,7 +32,7 @@ def get_arguments():
     args.project = "example"
     
     # If process fails on Decompress because of Cuda OOM, Run Decompress seperately
-    args.mode = "analysis"
+    args.mode = "all"
 
     if not args.mode or (args.mode != "new_project" and not args.project):
         parser.print_usage()
@@ -292,6 +292,8 @@ def normalize(data, custom_norm, cleared_col_names):
     data = numpy.apply_along_axis(
         data_processing.normalize, axis=0, arr=data, custom_norm=custom_norm
     )
+    if custom_norm:
+        data[numpy.isnan(data)] = 0
     df = data_processing.numpy_to_df(data, cleared_col_names)
     return df
 
@@ -408,7 +410,7 @@ def decompress(model_path, input_path, model_name):
     decompressed = model.decode(data_tensor)
     return decompressed
 
-def decompress_VAE(model_path, input_path_mu, input_path_var, model_name):
+def decompress_VAE(project_name, model_path, input_path_mu, input_path_var, model_name):
 
     # Load the data & convert to tensor
     data_mu = data_loader(input_path_mu)
@@ -417,8 +419,12 @@ def decompress_VAE(model_path, input_path_mu, input_path_var, model_name):
     modelDict = torch.load(str(model_path))
     number_of_columns = len(modelDict[list(modelDict.keys())[-1]])
 
-    if model_name in ["VanillaVAE", "CNN_VAE"]:
-        number_of_columns = 8 #Override for VAE
+    #TODO - Explore Possible bg while compression of VAE.
+    if project_name == 'example' and model_name in ["VanillaVAE", "CNN_VAE"]:
+        number_of_columns = 8
+
+    if project_name == 'un_peacekeeping' and model_name in ["VanillaVAE", "CNN_VAE"]:
+        number_of_columns = 6
 
     # Initialise and load the model correctly.
     ModelObject = data_processing.initialise_model(model_name)

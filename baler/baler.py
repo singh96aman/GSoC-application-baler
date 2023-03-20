@@ -34,10 +34,11 @@ def main():
         pre_processing(project_name, config.path_before_pre_processing, config.input_path)
         perform_training(config, project_path)
         perform_compression(config, project_path)
-        perform_decompression(config.save_as_root, config.model_name, project_path)
+        perform_decompression(project_name, config.save_as_root, config.model_name, project_path)
         perform_plotting(project_path, config)
         print_info(project_path)
-        analysis(project_name, config.input_path,project_path+"decompressed_output/decompressed.pickle")
+        if project_name != 'un_peacekeeping' :
+            analysis(project_name, config.input_path,project_path+"decompressed_output/decompressed.pickle")
     else:
         print(f'"{mode}" is not a know command!')
 
@@ -137,12 +138,13 @@ def perform_compression(config, project_path):
     helper.to_pickle(cleared_col_names,project_path+"compressed_output/column_names.pickle")
 
 
-def perform_decompression(save_as_root, model_name, project_path):
+def perform_decompression(project_name, save_as_root, model_name, project_path):
     print("Decompressing...")
     cleared_col_names = helper.from_pickle(project_path+"compressed_output/column_names.pickle")
     start = time.time()
     if model_name in ["VanillaVAE", "CNN_VAE"]:
         decompressed = helper.decompress_VAE(
+            project_name,
             model_path=project_path + "model/model.pt",
             input_path_mu=project_path + "compressed_output/compressed_mu.pickle",
             input_path_var=project_path + "compressed_output/compressed_log_var.pickle",
