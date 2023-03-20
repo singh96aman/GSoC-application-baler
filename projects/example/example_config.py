@@ -3,12 +3,13 @@ def set_config(c):
     c.input_path          = "data/example/example.pickle"
     c.path_before_pre_processing = "data/example/example.root"
     c.compression_ratio   = 2.0
-    c.epochs              = 10
+    c.epochs              = 15
     c.early_stopping      = False
     c.lr_scheduler        = True
     c.patience            = 20
     c.min_delta           = 0
-    c.model_name          = "VanillaVAE"
+    c.model_name          = "CNN_VAE"
+    #c.model_name          = "VanillaVAE"
     #c.model_name          = "george_SAE"
     c.custom_norm         = False
     c.l1                  = True

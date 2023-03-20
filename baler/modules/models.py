@@ -51,6 +51,69 @@ class VanillaVAE(nn.Module):
         z = self.reparameterize_sample(mu, log_var)
         return  [self.decode(z), mu, log_var]
 
+class CNN_VAE(nn.Module):
+    def __init__(self, device, n_features, z_dim, *args, **kwargs):
+        self.n_features = n_features
+        super().__init__(*args, **kwargs)
+
+        self.device = device
+        self.n_features = n_features
+        self.z_dim = z_dim
+
+        # encoder
+        self.en1 = nn.Conv1d(n_features, out_channels=64,
+                              kernel_size= 3, stride= 2, padding  = 1, dtype=torch.float64, device=device)
+        self.b1 = nn.BatchNorm1d(64, dtype=torch.float64, device=device)
+        self.en2 = nn.Conv1d(64, out_channels=128,
+                              kernel_size= 3, stride= 2, padding  = 1, dtype=torch.float64, device=device)
+        self.b2 = nn.BatchNorm1d(128, dtype=torch.float64, device=device)
+        self.en3 = nn.Conv1d(128, out_channels=256,
+                              kernel_size= 3, stride= 2, padding  = 1, dtype=torch.float64, device=device)
+        self.b3 = nn.BatchNorm1d(256, dtype=torch.float64, device=device)         
+        
+        # decoder
+        self.de1 = nn.Linear(z_dim, 256, dtype=torch.float64, device=device)   
+        self.de2 = nn.ConvTranspose1d(256, 128, stride=2, padding=1, output_padding=1, kernel_size= 3, dtype=torch.float64, device=device)
+        self.de3 = nn.ConvTranspose1d(128, 64, stride=2, padding=1, output_padding=1, kernel_size= 3, dtype=torch.float64, device=device)
+        self.de5 = nn.Conv1d(64, n_features, kernel_size= 3, stride= 2, padding  = 1, dtype=torch.float64, device=device)
+
+        self.fc_mu = nn.Linear(256, z_dim, dtype=torch.float64, device=device)
+        self.fc_var = nn.Linear(256, z_dim, dtype=torch.float64, device=device)
+
+    def encode(self, x):
+        x = x.resize(x.shape[0],self.n_features,1)
+        h1 = F.leaky_relu(self.en1(x))
+        h1 = self.b1(h1)
+        h2 = F.leaky_relu(self.en2(h1))
+        h2 = self.b2(h2)
+        h3 = self.en3(h2)
+        h3 = self.b3(h3)
+        h3_flat=torch.flatten(h3,start_dim=1)
+        mu = self.fc_mu(h3_flat)
+        log_var = self.fc_var(h3_flat)
+        return [mu, log_var]
+
+    def decode(self, z):
+        z=z.view(-1,1,4)
+        h4 = F.leaky_relu(self.de1(z))
+        h4 = h4.resize(z.shape[0], 256, 1)
+        h5 = self.de2(h4)
+        h6 = self.de3(h5)
+        out = self.de5(h6)
+        out = F.tanh(out)
+        out = torch.mean(out, -1)
+        return out
+
+    def reparameterize_sample(self, mu, logvar):
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        return eps * std + mu
+
+    def forward(self, x):
+        mu, log_var = self.encode(x)
+        z = self.reparameterize_sample(mu, log_var)
+        return  [self.decode(z), mu, log_var]
+
 class george_SAE(nn.Module):
     def __init__(self, device, n_features, z_dim, *args, **kwargs):
         super().__init__(*args, **kwargs)

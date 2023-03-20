@@ -27,7 +27,7 @@ def fit(model, train_dl, train_ds, model_children, regular_param, optimizer, RHO
         inputs = inputs.to(model.device)
         optimizer.zero_grad()
         reconstructions = model(inputs)
-        if config.model_name == "VanillaVAE":
+        if config.model_name in ["VanillaVAE", "CNN_VAE"]:
             loss, mse_loss, l1_loss = utils.sparse_loss_function_L1_VAE(
                 model_children=model_children,
                 true_data=inputs,
@@ -68,7 +68,7 @@ def validate(model, test_dl, test_ds, model_children, reg_param,config):
             counter += 1
             inputs = inputs.to(model.device)
             reconstructions = model(inputs)
-            if config.model_name == "VanillaVAE":
+            if config.model_name in ["VanillaVAE", "CNN_VAE"]:
                 loss = utils.sparse_loss_function_L1_VAE(
                     model_children=model_children,
                     true_data=inputs,

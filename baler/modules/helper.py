@@ -30,7 +30,9 @@ def get_arguments():
     
     #Temporary Hack to Test Quickly
     args.project = "example"
-    args.mode = "all"
+    
+    # If process fails on Decompress because of Cuda OOM, Run Decompress seperately
+    args.mode = "analysis"
 
     if not args.mode or (args.mode != "new_project" and not args.project):
         parser.print_usage()
@@ -415,7 +417,7 @@ def decompress_VAE(model_path, input_path_mu, input_path_var, model_name):
     modelDict = torch.load(str(model_path))
     number_of_columns = len(modelDict[list(modelDict.keys())[-1]])
 
-    if model_name == "VanillaVAE":
+    if model_name in ["VanillaVAE", "CNN_VAE"]:
         number_of_columns = 8 #Override for VAE
 
     # Initialise and load the model correctly.
